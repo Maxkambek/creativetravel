@@ -8,6 +8,7 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from django.utils.translation import gettext_lazy as _
+from travel.flights import RegionAPI, API
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -28,7 +29,7 @@ admin.site.site_title = 'OlBer'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('main/', include('main.urls')),
+    path('main/', API.as_view()),
     path('travel/', include('travel.urls')),
     path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),

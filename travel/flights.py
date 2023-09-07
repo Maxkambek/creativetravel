@@ -105,16 +105,15 @@ if __name__ == "__main__":
         checkout=datetime.now() + timedelta(days=2),
         residency="ru",
         language="ru",
-        adults=2,
+        adults=1,
         children=[],
     )
     if hp.error:
         raise (Exception(hp.error))
     print(f"we have caught {len([h for h in hp.data.hotels[0].rates])} booking hashes")
-    print(hp.data.hotels[0].rates[0].book_hash)
-
+    print(hp.data)
     # Next, we are going to the booking form with a rate hash from the hotel page result
-    order_id = "12"
+    order_id = "15"
     booking_form = make_booking_form(
         client=papi,
         order_id=order_id,
@@ -143,3 +142,62 @@ if __name__ == "__main__":
         raise (Exception(result.error))
     if result.status == "ok":
         print("congratulates! the booking is done!")
+from .models import Hotel, AmenityGroup, DescriptionStruct, PolicyStruct, RoomGroups, Region
+from rest_framework.views import APIView
+import json
+from rest_framework.response import Response
+from rest_framework import generics
+
+
+class API(APIView):
+    def post(self, request, *args, **kwargs):
+        # fil = self.request.data.get('file')
+        with open('/home/mahkam/Desktop/Django/creativetravel/partner_feed_ru.json', 'r') as file:
+            for line in file:
+                json_data = json.loads(line)
+                h = Hotel.objects.filter(sort_id=json_data['id']).first()
+                if not h:
+                    hotel = Hotel.objects.create(
+                        sort_id=json_data['id'],
+                        address=json_data['address'],
+                        latitude=json_data['latitude'],
+                        longitude=json_data['longitude'],
+                        name=json_data['name'],
+                        phone=json_data['phone'],
+                        postal_code=json_data['postal_code'],
+                        star_rating=json_data['star_rating'],
+                        email=json_data['email'],
+                        semantic_version=json_data['semantic_version'],
+                        is_closed=json_data['is_closed'],
+                        is_gender_specification_required=json_data['is_gender_specification_required'],
+                        images=json_data['images'],
+                        payment_methods=json_data['payment_methods'],
+                        country_code=json_data['region']['country_code'],
+                        region_iata=json_data['region']['iata'],
+                        region_id=json_data['region']['id'],
+                        region_name=json_data['region']['name'],
+                        region_type=json_data['region']['type'],
+                        serp_filters=json_data['serp_filters']
+                    )
+                    hotel.save()
+        return Response('Success')
+
+
+class RegionAPI(APIView):
+    def post(self, request, *args, **kwargs):
+        # fil = self.request.data.get('file')
+        with open('/home/mahkam/Desktop/Django/creativetravel/region.json', 'r') as file:
+            for line in file:
+                json_data = json.loads(line)
+                Region.objects.create(
+                    id=json_data['id'],
+                    iata=json_data['iata'],
+                    country_name=json_data['country_name']['en'],
+                    country_code=json_data['country_code'],
+                    longitude=json_data['center']['longitude'],
+                    latitude=json_data['center']['latitude'],
+                    hotels=json_data['hotels'],
+                    type=json_data['type'],
+                    name=json_data['name']['en']
+                )
+        return Response('Ajoyib')
